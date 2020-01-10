@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CRUD Tienda</title>
+
+    <style>
+
+    body {
+        background-color:beige;
+    }
+
+    textarea {
+        background-color: beige;
+    }
+
+    input {
+        background-color:beige;
+    }
+
+    td {
+        border:solid 2px black;
+    }
+
+    thead tr {
+        color: rgb(25, 180, 165);
+        font-weight: bold;
+    }
+
+    table {
+        background-color: beige;
+    }
+
+    </style>
+</head>
+<body>
+    <h1>Playtech Database</h1>
+    <p id = "resultado"></p>
+    <button onclick="listar('producto')">Productos</button><button onclick="listar('familia')">Familia</button><button onclick="listar('tienda')">Tienda</button><button onclick="listar('stock')">Stock</button>
+    <div id="datos">
+        <table id="producto" style="display:none">
+            <thead><td>Código</td><td>Nombre</td><td>Nombre Corto</td><td>Descripción</td><td>PVP</td><td>Familia</td></thead>
+        </table>
+        <table id="familia" style="display:none">
+            <thead><td>Código</td><td>Nombre</td></thead>
+        </table> 
+        <table id="tienda" style="display:none">
+            <thead><td>Código</td><td>Nombre</td><td>Teléfono</td></thead>
+        </table>
+        <table id="stock" style="display:none">
+            <thead><td>Producto</td><td>Tienda</td><td>Unidades</thead>
+        </table>
+    </div>
+    
+
+    <script>
+
+        var tablaActual = "";
+        var tablaAnterior = "";
+        
+        function listar(tabla) {
+            var grid = document.getElementById(tabla);
+            grid.innerHTML = "";
+            tablaActual = tabla;
+            var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var json = JSON.parse(this.responseText);
+                        document.getElementById(tabla).style.display = "block";
+                        if (tablaAnterior != tablaActual && tablaAnterior != "") {
+                            document.getElementById(tablaAnterior).style.display = "none";
+                        }
+                        tablaAnterior = tablaActual;
+                        switch(tabla) {
+                            case "producto":
+                                console.log(grid);
+                                grid.innerHTML += `<thead><td>Código</td><td>Nombre</td><td>Nombre Corto</td><td>Descripción</td><td>PVP</td><td>Familia</td></thead>`;
+                                grid.innerHTML +=  `<tr><td><input type="text" id="codpro"></input></td><td><input type="text"  id="nompro"></input></td><td><input type="text"  id="nomcorpro"></input></td><td><textarea rows="4" cols="50" id="despro"></textarea></td><td><input type="number"  id="PVPpro"></input></td><td><input type="text"  id="fampro"></input></td><td><button onclick="crear()">Crear Registro</button></td></tr>`;
+                                for (dato of json) {
+                                    grid.innerHTML += `<tr><td>${dato.cod}</td><td><input type="text" id="nompro${dato.cod}" value="${dato.nombre}"></input></td><td><input type="text" id="nomcorpro${dato.cod}" value="${dato.nombre_corto}"></input></td><td><textarea rows="4" cols="50" id="despro${dato.cod}">${dato.descripcion}</textarea></td><td><input type="number" id="PVPpro${dato.cod}" value="${dato.PVP}"></input></td><td><input type="text" id="fampro${dato.cod}" value="${dato.familia}"></input></td><td><button onclick="eliminar('${dato.cod}')">Eliminar</button></td><td><button onclick="actualizar('${dato.cod}')">Actualizar</button></td></tr>`;
+                                }
+                                break;
+                            case "familia":
+                                console.log(grid);
+                                grid.innerHTML += `<thead><td>Código</td><td>Nombre</td></thead>`;
+                                grid.innerHTML += `<tr><td><input type="text" id="codfam"></input></td><td><input type="text"  id="nomfam"></input></td><td><button onclick="crear()">Crear Registro</button></td></tr>`;
+                                for (dato of json) {
+                                    grid.innerHTML += `<tr><td>${dato.cod}</td><td><input type="text" id="nomfam${dato.cod}" value="${dato.nombre}"></input></td><td><button onclick="eliminar('${dato.cod}')">Eliminar</button></td><td><button onclick="actualizar('${dato.cod}')">Actualizar</button></td></tr>`;
+                                }
+                                break;
+                            case "tienda":
+                                console.log(grid);
+                                grid.innerHTML += `<thead><td>Código</td><td>Nombre</td><td>Teléfono</td></thead>`;
+                                grid.innerHTML +=  `<tr><td></td><td><input type="text"  id="nomtie"></input></td><td><input type="text"  id="tlftie"></input></td><td><button onclick="crear()">Crear Registro</button></td></tr>`;
+                                for (dato of json) {
+                                    grid.innerHTML += `<tr><td>${dato.cod}</td><td><input type="text" id="nomtie${dato.cod}" value="${dato.nombre}"></input></td><td><input type="text" id="tlftie${dato.cod}" value="${dato.tlf}"></input></td><td><button onclick="eliminar('${dato.cod}')">Eliminar</button></td><td><button onclick="actualizar('${dato.cod}')">Actualizar</button></td></tr>`;
+                                }
+                                break;
+                            case "stock":
+                                console.log(grid);
+                                grid.innerHTML += `<thead><td>Producto</td><td>Tienda</td><td>Unidades</thead>`;
+                                    grid.innerHTML += `<tr><td><input type="text" id="codsto"></input></td><td><input type="text" id="tiesto"></input></td><td><input type="number"  id="unisto"></input></td><td><button onclick="crear()">Crear Registro</button></td></tr>`;
+                                for (dato of json) {
+                                    grid.innerHTML += `<tr><td>${dato.producto}</td><td>${dato.tienda}</td><td><input type="number" id="unisto${dato.producto}${dato.tienda}" value="${dato.unidades}"></input></td><td><button onclick="eliminar('${dato.producto}',${dato.tienda})">Eliminar</button></td><td><button onclick="actualizar('${dato.producto}',${dato.tienda})">Actualizar</button></td></tr>`;
+                                }   
+                                break;
+                            }
+                    }
+                };
+                xhttp.open("GET", "listar.php?tabla="+tablaActual, true);
+                xhttp.send();
+        }
+
+        function eliminar(codigo, tienda) {
+            if (tablaActual != "stock") {
+                tienda = undefined;
+            }
+            var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                        listar(tablaActual);
+                    }
+                };
+                xhttp.open("POST", "eliminar.php?tabla="+tablaActual, true);
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                if (tablaActual == "stock") {
+                    xhttp.send(`producto=${codigo}&tienda=${tienda}`);
+                }
+                else {
+                    xhttp.send(`cod=${codigo}`)
+                }
+
+        }
+
+        function crear() {
+            var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                        listar(tablaActual);
+                    }
+                };
+                xhttp.open("POST", "crear.php?tabla="+tablaActual, true);
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                if (tablaActual == "stock") {
+                    xhttp.send(`producto=${document.getElementById('codsto').value}&tienda=${document.getElementById('tiesto').value}&unidades=${document.getElementById('unisto').value}`);
+                }
+                else if (tablaActual == "producto") {
+                    xhttp.send(`cod=${document.getElementById('codpro').value}&nombre=${document.getElementById('nompro').value}&nombre_corto=${document.getElementById('nomcorpro').value}&descripcion=${document.getElementById('despro').value}&PVP=${document.getElementById('PVPpro').value}&familia=${document.getElementById('fampro').value}`);
+                }
+                else if (tablaActual == "familia") {
+                    xhttp.send(`cod=${document.getElementById('codfam').value}&nombre=${document.getElementById('nomfam').value}`);
+                }
+                else if (tablaActual == "tienda") {
+                    xhttp.send(`nombre=${document.getElementById('nomtie').value}&tlf=${document.getElementById('tlftie').value}`);
+                }
+        }
+
+        function actualizar(codigo, tienda) {
+            if (tablaActual != "stock") {
+                tienda = undefined;
+            }
+            var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                        listar(tablaActual);
+                    }
+                };
+                xhttp.open("POST", "actualizar.php?tabla="+tablaActual, true);
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                if (tablaActual == "stock") {
+                    xhttp.send(`producto=${codigo}&tienda=${tienda}&unidades=${document.getElementById('unisto'+codigo+''+tienda).value}`);
+                }
+                else if (tablaActual == "producto") {
+                    xhttp.send(`cod=${codigo}&nombre=${document.getElementById('nompro'+codigo).value}&nombre_corto=${document.getElementById('nomcorpro'+codigo).value}&descripcion=${document.getElementById('despro'+codigo).value}&PVP=${document.getElementById('PVPpro'+codigo).value}&familia=${document.getElementById('fampro'+codigo).value}`);
+                }
+                else if (tablaActual == "familia") {
+                    xhttp.send(`cod=${codigo}&nombre=${document.getElementById('nomfam'+codigo).value}`);
+                }
+                else if (tablaActual == "tienda") {
+                    xhttp.send(`cod=${codigo}&nombre=${document.getElementById('nomtie'+codigo).value}&tlf=${document.getElementById('tlftie'+codigo).value}`);
+                }
+        }
+
+    </script>
+</body>
+</html>
